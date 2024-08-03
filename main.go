@@ -23,10 +23,6 @@ type Message struct {
 	Problems string `json:"problems"`
 }
 
-type GPTResponse struct {
-	FormattedText string `json:"formattedText"`
-}
-
 var entriesByDate = make(map[string]Message)
 
 const dataFile = "entries.json"
@@ -97,19 +93,36 @@ func generateHandler(w http.ResponseWriter, r *http.Request) {
 	formattedText := fmt.Sprintf("Progress: %s\nPlans: %s\nProblems: %s",
 		msg.Progress, msg.Plans, msg.Problems)
 
-	response := GPTResponse{
-		FormattedText: formattedText,
+	response := map[string]string{
+		"formattedText": formattedText,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
+func currentEntryHandler(w http.ResponseWriter, r *http.Request) {
+	currentDate := time.Now().Format("2006-01-02")
+	entry, exists := entriesByDate[currentDate]
+	if !exists {
+		entry = Message{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(entry)
+}
+
 func main() {
+	err := loadEntries()
+	if err != nil {
+		log.Fatalf("Error loading entries: %v", err)
+	}
+
 	router := mux.NewRouter()
 
 	router.HandleFunc("/ws", wsEndpoint)
 	router.HandleFunc("/generate", generateHandler).Methods("POST")
+	router.HandleFunc("/current-entry", currentEntryHandler).Methods("GET")
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
 	http.Handle("/", router)
