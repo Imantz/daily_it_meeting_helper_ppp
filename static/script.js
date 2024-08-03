@@ -47,7 +47,6 @@ generateButton.addEventListener('click', async () => {
 window.addEventListener('load', async () => {
     const response = await fetch('http://localhost:8080/current-entry');
     const data = await response.json();
-    console.log(data);
     progressInput.value = data.progress || '';
     plansInput.value = data.plans || '';
     problemsInput.value = data.problems || '';
