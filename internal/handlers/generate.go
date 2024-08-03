@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"imantz/daily_it_meeting_helper_ppp/internal/models"
 	"imantz/daily_it_meeting_helper_ppp/internal/services"
 	"net/http"
+
 	"time"
 )
 
@@ -17,8 +17,11 @@ func GenerateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formattedText := fmt.Sprintf("Progress: %s\nPlans: %s\nProblems: %s",
-		msg.Progress, msg.Plans, msg.Problems)
+	formattedText, err := services.CallChatGPT(msg)
+	if err != nil {
+		http.Error(w, "Error calling ChatGPT API", http.StatusInternalServerError)
+		return
+	}
 
 	response := map[string]string{
 		"formattedText": formattedText,
