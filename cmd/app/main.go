@@ -5,10 +5,17 @@ import (
 	"imantz/daily_it_meeting_helper_ppp/internal/services"
 	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := services.LoadEntries()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
+	err = services.LoadEntries()
 	if err != nil {
 		log.Fatalf("Error loading entries: %v", err)
 	}
